@@ -1,62 +1,96 @@
 import streamlit as st
 from PIL import Image
+import pandas as pd
 
-st.title(" Mi Primera App!!")
+# Título y descripción
+st.set_page_config(page_title="Explorador Brutalista", layout="wide")
+st.title("Explorador de Arquitectura Brutalista 🇬🇧🧱")
+st.markdown(
+    "En este microblog puedes descubrir edificios emblemáticos del movimiento brutalista, dejar tus notas y calificar lo que más te llama la atención. Ideal para estudiantes y curiosos de la arquitectura.")
 
-st.header("En este espacio comienzo a desarrollar mis aplicaciones para interfaces multimodales.")
-st.write("Facilmente puedo realizar backend y frontend.")
-image = Image.open('Interfaces Mult2.png')
-
-st.image(image, caption='Interfaces multimodales')
-
-
-texto = st.text_input('Escribe algo', 'Este es mi texto')
-st.write('El texto escrito es', texto)
-
-st.subheader("Ahora usemos 2 Columnas")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("Esta es la primera columna")
-    st.write("Las interfaces multimodales mejoran la experiencia de usuario")
-    resp = st.checkbox('Estoy de acuerdo')
-    if resp:
-       st.write('Correcto!')
-  
-with col2:
-    st.subheader("Esta es la segunda columna")
-    modo = st.radio("Que Modalidad es la principal en tu interfaz", ('Visual', 'auditiva', 'Táctil'))
-    if modo == 'Visual':
-       st.write('La vista es fundamental para tu interfaz')
-    if modo == 'auditiva':
-       st.write('La audición es fundamental para tu interfaz')
-    if modo == 'Táctil':
-       st.write('El tacto es fundamental para tu interfaz')
-        
-st.subheader("Uso de Botones")
-if st.button('Presiona el botón'):
-    st.write('Gracias por presionar')
-else:
-    st.write('No has presionado aún')
-
-st.subheader("Selectbox")
-in_mod = st.selectbox(
-    "Selecciona la modalidad",
-    ("Audio", "Visual", "Háptico"),
-)
-if in_mod == "Audio":
-    set_mod = "Reproducir audio"
-elif in_mod == "Visual":
-    set_mod = "Reproducir video"
-elif in_mod == "Háptico":
-    set_mod = "Activar vibración"
-st.write(" La acción es:" , set_mod)
-
-
+# Sidebar: selección y filtros
 with st.sidebar:
-    st.subheader("Configura la modalidad")
-    mod_radio = st.radio(
-        "Escoge la modalidad a usar",
-        ("Visual", "Auditiva","Háptica")
-    )
+    st.header("Buscar edificio")
+    edificio = st.selectbox("Selecciona un edificio:",
+                            ("Unidad Habitacional de Marsella", "Biblioteca Nacional de Buenos Aires", "Barbican Centre", "Torre de Concreto (ejemplo)")
+                            )
+    mostrar_filtros = st.checkbox("Mostrar filtros avanzados")
+    if mostrar_filtros:
+        año = st.slider("Año de construcción aproximado", 1900, 2030, 1970)
+        tipo = st.radio("Tipo:", ("Residencial", "Cultural", "Mixto", "Oficinas"))
+
+# Imagen y breve ficha técnica
+st.subheader(edificio)
+col1, col2 = st.columns([1, 2])
+with col1:
+    # intenta abrir una imagen local con nombre basado en la selección, si no existe muestra un marcador
+    try:
+        img = Image.open(edificio.replace(" ", "_") + ".jpg")
+        st.image(img, caption=edificio, use_column_width=True)
+    except Exception:
+        st.image("https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg", caption="Imagen no disponible", width=250)
+
+with col2:
+    if edificio == "Unidad Habitacional de Marsella":
+        st.write("**Arquitecto:** Le Corbusier")
+        st.write("**Ubicación:** Marsella, Francia")
+        st.write("**Año:** 1952")
+        st.write("**Descripción:** Concreto visto, soluciones de vivienda social y patios interiores. Ejemplo clásico del brutalismo con principios funcionales.")
+    elif edificio == "Biblioteca Nacional de Buenos Aires":
+        st.write("**Arquitecto:** Clorindo Testa")
+        st.write("**Ubicación:** Buenos Aires, Argentina")
+        st.write("**Año:** 1992 (inauguración parcial)")
+        st.write("**Descripción:** Volumen escultórico, uso expresivo del hormigón y escalas monumentales.")
+    elif edificio == "Barbican Centre":
+        st.write("**Arquitecto:** Chamberlin, Powell and Bon")
+        st.write("**Ubicación:** Londres, Reino Unido")
+        st.write("**Año:** 1982")
+        st.write("**Descripción:** Complejo cultural y residencial: pasarelas, patios y texturas de concreto.")
+    else:
+        st.write("Ficha técnica básica disponible. Añade una imagen local con el nombre del edificio para más detalle.")
+
+# Interacción: dejar nota y calificar
+st.markdown("---")
+st.subheader("Tu valoración")
+nota = st.text_input("Deja una nota rápida sobre este edificio:", "Me encanta por...")
+calificacion = st.slider("¿Qué calificación le das?", 0, 10, 7)
+
+# Checkbox para mostrar datos interesantes
+if st.checkbox("Mostrar datos curiosos"):
+    st.info("El término 'brutalismo' no viene de 'brutal' en sentido común, sino de 'béton brut' (hormigón crudo en francés).")
+
+# Dos columnas con aspectos positivos y negativos
+c1, c2 = st.columns(2)
+with c1:
+    st.markdown("**Aspectos que me gustan**")
+    favoritos = st.multiselect("Elige elementos:", ["Textura de hormigón", "Volumen escultural", "Patios interiores", "Uso funcional"]) 
+with c2:
+    st.markdown("**Aspectos que me incomodan**")
+    molestias = st.multiselect("Elige molestias:", ["Escala monumental", "Falta de ornamentación", "Clima interior frío", "Mantenimiento costoso"])
+
+# Botón para guardar la entrada en la sesión
+if 'entradas' not in st.session_state:
+    st.session_state['entradas'] = []
+
+if st.button("Guardar mi valoración"):
+    entrada = {
+        'edificio': edificio,
+        'nota': nota,
+        'calificacion': calificacion,
+        'favoritos': ", ".join(favoritos),
+        'molestias': ", ".join(molestias)
+    }
+    st.session_state['entradas'].append(entrada)
+    st.success("Valoración guardada en la sesión ✔️")
+
+# Mostrar entradas guardadas
+st.subheader("Valoraciones guardadas (sesión)")
+if st.session_state['entradas']:
+    df = pd.DataFrame(st.session_state['entradas'])
+    st.dataframe(df)
+else:
+    st.write("Aún no hay valoraciones guardadas. Guarda la primera para verla aquí.")
+
+# Footer con recomendaciones
+st.markdown("---")
+st.write("Sugerencia: coloca imágenes en el mismo directorio con los nombres:\n- Unidad_Habitacional_de_Marsella.jpg\n- Biblioteca_Nacional_de_Buenos_Aires.jpg\n- Barbican_Centre.jpg\n\nSi quieres, puedo adaptarlo a otro tema (viajes, café, música) o agregar exportación a CSV.")
