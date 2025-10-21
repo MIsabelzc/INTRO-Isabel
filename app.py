@@ -91,6 +91,3 @@ if st.session_state['entradas']:
 else:
     st.write("Aún no hay valoraciones guardadas. Guarda la primera para verla aquí.")
 
-# Footer con recomendaciones
-st.markdown("---")
-st.write("Sugerencia: coloca imágenes en el mismo directorio con los nombres:\n- Unidad_Habitacional_de_Marsella.jpg\n- Biblioteca_Nacional_de_Buenos_Aires.jpg\n- Barbican_Centre.jpg\n\nSi quieres, puedo adaptarlo a otro tema (viajes, café, música) o agregar exportación a CSV.")
